@@ -242,6 +242,167 @@ cd backend
 npx medusa exec ./src/admin/initialize-store.ts
 ```
 
+### 7.1. Collections & Categories Setup (CRITICAL!)
+
+**IMPORTANT:** Collections and categories are essential for navigation. The storefront has `/collections/[handle]` pages that will 404 if collections don't exist.
+
+#### Create Collections Based on PLAN.md
+
+If PLAN.md mentions featured products, GPU tiers, or product groupings:
+
+```typescript
+// In initialization script (after products are created)
+
+// Example: Gaming laptop store
+const collections = [
+  { title: "Featured Products", handle: "featured" },
+  { title: "RTX 4090 Laptops", handle: "rtx-4090" },
+  { title: "Budget Gaming", handle: "budget" },
+  { title: "Best Sellers", handle: "best-sellers" },
+]
+
+for (const col of collections) {
+  const collection = await productModuleService.createProductCollections({
+    title: col.title,
+    handle: col.handle,
+    metadata: {
+      description: `Collection for ${col.title}`,
+      created_by: "init_script",
+    },
+  })
+
+  logger.info(`✅ Created collection: ${col.title} (${collection.id})`)
+}
+
+// Assign products to collections manually
+// Example: Add RTX 4090 laptops to rtx-4090 collection
+const rtx4090Products = products.filter(p =>
+  p.metadata?.gpu?.includes("RTX 4090")
+)
+
+await productModuleService.updateProductCollections(collection.id, {
+  product_ids: rtx4090Products.map(p => p.id),
+})
+```
+
+#### Create Category Hierarchy
+
+Based on product types in PLAN.md:
+
+```typescript
+// Parent category
+const gamingLaptopsCategory = await productModuleService.createProductCategories({
+  name: "Gaming Laptops",
+  handle: "gaming-laptops",
+  is_active: true,
+  metadata: { display_in_menu: true },
+})
+
+logger.info(`✅ Created category: Gaming Laptops`)
+
+// GPU-based subcategories
+const gpuTiers = ["RTX 4050", "RTX 4060", "RTX 4070", "RTX 4080", "RTX 4090"]
+
+for (const gpu of gpuTiers) {
+  await productModuleService.createProductCategories({
+    name: gpu,
+    handle: gpu.toLowerCase().replace(/\s+/g, "-"),
+    parent_category_id: gamingLaptopsCategory.id,
+    is_active: true,
+  })
+}
+
+logger.info(`✅ Created GPU categories: ${gpuTiers.join(", ")}`)
+
+// Price-based subcategories
+const priceRanges = [
+  { name: "Budget (Under ₹80k)", handle: "budget" },
+  { name: "Mid-Range (₹80k-₹1.5L)", handle: "mid-range" },
+  { name: "Premium (₹1.5L-₹2.5L)", handle: "premium" },
+  { name: "Flagship (₹2.5L+)", handle: "flagship" },
+]
+
+for (const range of priceRanges) {
+  await productModuleService.createProductCategories({
+    name: range.name,
+    handle: range.handle,
+    parent_category_id: gamingLaptopsCategory.id,
+    is_active: true,
+  })
+}
+
+logger.info(`✅ Created price range categories`)
+
+// Brand-based subcategories (if applicable)
+const brands = ["ASUS ROG", "MSI", "Lenovo Legion", "HP Omen", "Dell Alienware"]
+
+for (const brand of brands) {
+  await productModuleService.createProductCategories({
+    name: brand,
+    handle: brand.toLowerCase().replace(/\s+/g, "-"),
+    parent_category_id: gamingLaptopsCategory.id,
+    is_active: true,
+  })
+}
+
+logger.info(`✅ Created brand categories`)
+```
+
+#### Assign Products to Categories
+
+```typescript
+// After creating products, assign to appropriate categories
+
+// Example: Assign based on metadata
+for (const product of createdProducts) {
+  const categoryIds = []
+
+  // Assign to GPU category
+  if (product.metadata?.gpu?.includes("RTX 4090")) {
+    categoryIds.push(rtx4090CategoryId)
+  }
+
+  // Assign to price category
+  const price = product.variants[0]?.prices[0]?.amount || 0
+  if (price < 8000000) { // Under ₹80k
+    categoryIds.push(budgetCategoryId)
+  } else if (price < 15000000) { // ₹80k-₹1.5L
+    categoryIds.push(midRangeCategoryId)
+  }
+
+  // Assign to brand category
+  if (product.metadata?.brand) {
+    const brandCategoryId = brandCategories.find(c =>
+      c.name === product.metadata.brand
+    )?.id
+    if (brandCategoryId) categoryIds.push(brandCategoryId)
+  }
+
+  // Update product with categories
+  if (categoryIds.length > 0) {
+    await productModuleService.updateProducts(product.id, {
+      category_ids: categoryIds,
+    })
+  }
+}
+
+logger.info(`✅ Assigned products to categories`)
+```
+
+#### Why This Matters
+
+**Without collections/categories:**
+- `/collections/[handle]` pages will 404
+- Footer links like "RTX 4050", "Budget" will be broken
+- No way to browse products by grouping
+- Poor user experience
+
+**With collections/categories:**
+- Navigation works out of the box
+- Users can browse by GPU, price, brand
+- Collections can be featured on homepage
+- No 404 errors
+
 ### 8. Verify Configuration
 
 Run these checks:

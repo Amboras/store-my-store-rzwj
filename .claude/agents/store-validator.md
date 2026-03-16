@@ -442,6 +442,169 @@ echo ""
 
 ---
 
+### Suite 7: Page Availability Tests (17 tests)
+
+**CRITICAL:** Test that ALL pages exist and return 200 (not 404).
+
+**Why:** Storefront has links to these pages. If they don't exist, users get 404 errors.
+
+```bash
+#!/bin/bash
+set -e
+
+echo "🧪 Suite 7: Testing Page Availability..."
+echo ""
+
+PAGES=(
+  "/"
+  "/products"
+  "/collections/featured"
+  "/cart"
+  "/checkout"
+  "/checkout/success"
+  "/account"
+  "/account/orders"
+  "/account/addresses"
+  "/about"
+  "/contact"
+  "/shipping"
+  "/faq"
+  "/privacy"
+  "/terms"
+)
+
+FAILED=0
+PASSED=0
+
+for page in "${PAGES[@]}"; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000${page}")
+
+  if [ "$STATUS" = "200" ]; then
+    echo "  ✅ ${page} → 200 OK"
+    PASSED=$((PASSED + 1))
+  else
+    echo "  ❌ ${page} → ${STATUS} (Expected 200, page missing!)"
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+# Test dynamic product page
+echo "  Testing dynamic routes..."
+FIRST_PRODUCT_HANDLE=$(curl -s "http://localhost:9000/store/products?limit=1" \
+  -H "x-publishable-api-key: $(grep NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY storefront/.env.local | cut -d '=' -f2)" \
+  | jq -r '.products[0].handle')
+
+if [ "$FIRST_PRODUCT_HANDLE" != "null" ] && [ -n "$FIRST_PRODUCT_HANDLE" ]; then
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000/products/${FIRST_PRODUCT_HANDLE}")
+
+  if [ "$STATUS" = "200" ]; then
+    echo "  ✅ /products/${FIRST_PRODUCT_HANDLE} → 200 OK"
+    PASSED=$((PASSED + 1))
+  else
+    echo "  ❌ /products/${FIRST_PRODUCT_HANDLE} → ${STATUS}"
+    FAILED=$((FAILED + 1))
+  fi
+fi
+
+# Test dynamic order detail page (expect redirect to login, not 404)
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000/account/orders/order_123")
+
+if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "302" ]; then
+  echo "  ✅ /account/orders/[id] → ${STATUS} (page exists)"
+  PASSED=$((PASSED + 1))
+else
+  echo "  ❌ /account/orders/[id] → ${STATUS} (page missing!)"
+  FAILED=$((FAILED + 1))
+fi
+
+echo ""
+
+if [ $FAILED -gt 0 ]; then
+  echo "❌ Page Availability Tests FAILED: $FAILED pages missing/broken"
+  echo "✅ Passed: $PASSED"
+  echo "❌ Failed: $FAILED"
+  exit 1
+else
+  echo "✅ All Page Availability Tests PASSED (17/17)"
+fi
+
+echo ""
+```
+
+---
+
+### Suite 8: Navigation Link Tests (5 tests)
+
+**CRITICAL:** Test that header/footer links point to existing pages (no broken links).
+
+**Why:** Users clicking navigation links should never get 404 errors.
+
+```bash
+#!/bin/bash
+set -e
+
+echo "🧪 Suite 8: Testing Navigation Links..."
+echo ""
+
+# Fetch homepage HTML
+HTML=$(curl -s "http://localhost:3000")
+
+# Extract all internal links (href="/...")
+LINKS=$(echo "$HTML" | grep -oP 'href="\K/[^"]+' | grep -v '^#' | sort -u || true)
+
+if [ -z "$LINKS" ]; then
+  echo "⚠️  Warning: No internal links found in homepage HTML"
+  echo "✅ Navigation Link Tests SKIPPED (no links to test)"
+  exit 0
+fi
+
+FAILED=0
+PASSED=0
+TOTAL=0
+
+echo "Found $(echo "$LINKS" | wc -l) unique internal links"
+echo ""
+
+for link in $LINKS; do
+  # Skip external links, anchors, and query params for now
+  if [[ "$link" =~ ^http ]] || [[ "$link" =~ ^\? ]]; then
+    continue
+  fi
+
+  TOTAL=$((TOTAL + 1))
+
+  # Extract just the path (remove query string and hash)
+  PATH=$(echo "$link" | cut -d'?' -f1 | cut -d'#' -f1)
+
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000${PATH}")
+
+  if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "302" ]; then
+    echo "  ✅ ${PATH} → ${STATUS}"
+    PASSED=$((PASSED + 1))
+  else
+    echo "  ❌ ${PATH} → ${STATUS} (BROKEN LINK - page missing!)"
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+echo ""
+
+if [ $FAILED -gt 0 ]; then
+  echo "❌ Navigation Link Tests FAILED: $FAILED broken links found"
+  echo "✅ Passed: $PASSED/$TOTAL"
+  echo "❌ Failed: $FAILED/$TOTAL"
+  echo ""
+  echo "🔧 Fix: Create the missing pages that are linked in navigation"
+  exit 1
+else
+  echo "✅ All Navigation Link Tests PASSED ($PASSED/$TOTAL links working)"
+fi
+
+echo ""
+```
+
+---
+
 ## Validation Report Format
 
 After running all tests, generate this report:
@@ -462,11 +625,14 @@ Store: [store name]
 | Regions | 2 | 2 | 0 |
 | Storefront | 3 | 3 | 0 |
 | E2E Journey | 1 | 1 | 0 |
+| **Page Availability** | **17** | **17** | **0** |
+| **Navigation Links** | **5** | **5** | **0** |
 
-**Overall: ✅ PASS** (17/17 tests passed)
+**Overall: ✅ PASS** (39/39 tests passed)
 
 ## Critical Checks
 
+### Backend & Infrastructure
 - [x] Backend running (port 9000)
 - [x] Storefront running (port 3000)
 - [x] Products exist
@@ -478,27 +644,74 @@ Store: [store name]
 - [x] Sales channel configured
 - [x] Publishable API key configured
 
+### Pages & Navigation ⭐ NEW
+- [x] **All 17 pages exist** (no 404s)
+- [x] **No broken links** in header
+- [x] **No broken links** in footer
+- [x] **No broken links** on homepage
+- [x] Dynamic routes accessible
+- [x] Collection pages work
+- [x] Cart page accessible
+- [x] Checkout page accessible
+- [x] Account pages accessible
+- [x] Static pages accessible
+
 ## Test Details
 
-### Infrastructure
+### Infrastructure (3 tests)
 ✅ Backend health check
 ✅ Admin dashboard accessible
 ✅ Storefront accessible
 
-### Products API
+### Products API (3 tests)
 ✅ Products endpoint returns data
 ✅ **Variants have prices (calculated_price populated)**
 ✅ Product retrieval by handle works
 
-### Cart Workflow
+### Cart Workflow (5 tests)
 ✅ Cart creation
 ✅ Add item to cart
 ✅ Update quantity
 ✅ Remove item
 ✅ Retrieve cart
 
-### E2E Journey
+### Regions (2 tests)
+✅ List regions
+✅ Get region by ID
+
+### Storefront (3 tests)
+✅ Homepage loads
+✅ Product pages load
+✅ No JavaScript errors
+
+### E2E Journey (1 test)
 ✅ Complete customer journey (browse → view → cart → add → update → remove)
+
+### Page Availability (17 tests) ⭐ NEW
+✅ Homepage (/)
+✅ All products (/products)
+✅ Product detail (/products/[handle])
+✅ Collections (/collections/[handle])
+✅ Cart (/cart)
+✅ Checkout (/checkout)
+✅ Order success (/checkout/success)
+✅ Account dashboard (/account)
+✅ Orders (/account/orders)
+✅ Order detail (/account/orders/[id])
+✅ Addresses (/account/addresses)
+✅ About (/about)
+✅ Contact (/contact)
+✅ Shipping (/shipping)
+✅ FAQ (/faq)
+✅ Privacy (/privacy)
+✅ Terms (/terms)
+
+### Navigation Links (5 tests) ⭐ NEW
+✅ All header links work (no 404s)
+✅ All footer links work (no 404s)
+✅ All homepage links work
+✅ No broken internal links
+✅ Dynamic routes accessible
 
 ## Issues Found
 

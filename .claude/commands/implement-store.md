@@ -127,13 +127,27 @@ sleep 10  # Wait for services to be ready
 6. **E2E Customer Journey** (1 comprehensive test)
    - Browse products → view details → create cart → add item → update quantity → remove item
 
-**Total:** 17 comprehensive tests
+7. **Page Availability Tests** (17 tests) ⭐ NEW
+   - All 17 mandatory pages exist and return 200
+   - Homepage, Products, Product Detail, Collections, Cart, Checkout, etc.
+   - Account pages (Dashboard, Orders, Addresses)
+   - Static pages (About, Contact, Shipping, FAQ, Privacy, Terms)
+
+8. **Navigation Link Tests** (5 tests) ⭐ NEW
+   - All header links work (no 404s)
+   - All footer links work (no 404s)
+   - All homepage links work
+   - No broken internal links found
+
+**Total:** 39 comprehensive tests
 
 #### 6.3: Validation Results
 
-**If ALL tests pass (17/17):**
+**If ALL tests pass (39/39):**
 - ✅ Implementation successful
 - ✅ Store is ready for use
+- ✅ **All pages exist (no 404s)**
+- ✅ **No broken links**
 - ✅ Proceed to completion report
 
 **If ANY test fails:**
@@ -141,7 +155,7 @@ sleep 10  # Wait for services to be ready
 - ❌ Read error details from validator agent
 - ❌ Fix the underlying issue
 - ❌ Re-run validation
-- ❌ **DO NOT report completion until all tests pass**
+- ❌ **DO NOT report completion until all 39 tests pass**
 
 **Common failures and fixes:**
 
@@ -152,10 +166,13 @@ sleep 10  # Wait for services to be ready
 | Products not found | Initialization script not run | Run `npx medusa exec ./src/admin/initialize-store.ts` |
 | Cart creation fails | Region not configured | Check initialization script created region |
 | 401 Unauthorized | Publishable key not configured | Create API key and update `.env.local` |
+| **Page returns 404** ⭐ NEW | **Page not created** | **Create the missing page in `app/` directory** |
+| **Broken link in navigation** ⭐ NEW | **Linked page doesn't exist** | **Either create the page or remove the link** |
+| **Collections page 404** ⭐ NEW | **Collections not created** | **Run initialization script to create collections** |
 
 ### 7. Report Completion (Only After Validation Passes!)
 
-**ONLY provide this report if validation passed 17/17 tests.**
+**ONLY provide this report if validation passed 39/39 tests.**
 
 Provide user with:
 
@@ -167,7 +184,7 @@ Provide user with:
 
 ### ✅ Validation Results
 
-**ALL TESTS PASSED (17/17)**
+**ALL TESTS PASSED (39/39)**
 
 | Test Suite | Status |
 |------------|--------|
@@ -177,6 +194,8 @@ Provide user with:
 | Regions (2 tests) | ✅ PASS |
 | Storefront (3 tests) | ✅ PASS |
 | E2E Journey (1 test) | ✅ PASS |
+| **Page Availability (17 tests)** ⭐ NEW | ✅ PASS |
+| **Navigation Links (5 tests)** ⭐ NEW | ✅ PASS |
 
 **Critical Checks:**
 - ✅ Products have prices (`calculated_price` populated)
@@ -184,6 +203,9 @@ Provide user with:
 - ✅ Region and sales channel configured
 - ✅ Publishable API key working
 - ✅ Complete customer journey works end-to-end
+- ✅ **All 17 pages exist (no 404 errors)** ⭐ NEW
+- ✅ **No broken navigation links** ⭐ NEW
+- ✅ **Collections and categories accessible** ⭐ NEW
 
 ### Services Running
 
@@ -193,14 +215,27 @@ Provide user with:
 
 ### What Works Right Now
 
+**Core Shopping:**
 ✅ Browse products on storefront
 ✅ View product details with prices
+✅ Browse collections (GPU tiers, price ranges, brands)
 ✅ Add products to cart
 ✅ Update cart quantities
 ✅ Remove items from cart
+✅ View full cart page
+✅ Access checkout page
+
+**Admin:**
 ✅ Manage products in admin dashboard
 ✅ Edit product prices in admin
 ✅ Changes in admin visible on storefront immediately
+
+**All Pages (17):**
+✅ Homepage, All Products, Product Details
+✅ Collections, Cart, Checkout, Order Success
+✅ Account Dashboard, Orders, Addresses
+✅ About, Contact, Shipping, FAQ, Privacy, Terms
+✅ **Zero 404 errors** - all navigation links work
 
 ### Next Steps
 
