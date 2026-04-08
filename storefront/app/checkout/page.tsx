@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { PromoCodeInput } from '@/components/checkout/promo-code-input'
 import { getProductImage } from '@/lib/utils/placeholder-images'
 import { trackBeginCheckout } from '@/lib/analytics'
+import { trackMetaEvent, toMetaCurrencyValue } from '@/lib/meta-pixel'
 import { formatPrice } from '@/lib/utils/format-price'
 import type { ShippingOption, CartLineItem } from '@/types'
 
@@ -92,8 +93,19 @@ export default function CheckoutPage() {
     if (cart?.id && hasItems && !trackedCheckout.current) {
       trackedCheckout.current = true
       trackBeginCheckout(cart.id, cart.total, currency)
+      trackMetaEvent('InitiateCheckout', {
+        value: toMetaCurrencyValue(cart.total),
+        currency,
+        content_ids: (cart.items || []).map((item: any) => item.variant_id).filter(Boolean),
+        contents: (cart.items || []).map((item: any) => ({
+          id: item.variant_id,
+          quantity: item.quantity,
+          item_price: toMetaCurrencyValue(item.unit_price),
+        })),
+        num_items: (cart.items || []).reduce((sum: number, item: any) => sum + item.quantity, 0),
+      })
     }
-  }, [cart?.id, hasItems, cart?.total, currency])
+  }, [cart?.id, hasItems, cart?.total, currency, cart?.items])
 
   useEffect(() => {
     if (!authLoading && checkoutSettings?.require_account && !isLoggedIn) {
@@ -496,6 +508,8 @@ export default function CheckoutPage() {
                       stripeAccountId={paymentSession.stripe_account_id}
                       publishableKey={stripeConfig.publishableKey}
                       isCompletingOrder={isUpdating}
+                      value={toMetaCurrencyValue(cart?.total)}
+                      currency={currency}
                       onPaymentSuccess={async () => {
                         const order = await completeCheckout()
                         if (order) {

@@ -5,6 +5,8 @@ import { useCart } from '@/hooks/use-cart'
 import { Minus, Plus, Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import ProductPrice, { type VariantExtension } from './product-price'
+import { trackAddToCart } from '@/lib/analytics'
+import { trackMetaEvent, toMetaCurrencyValue } from '@/lib/meta-pixel'
 
 interface ProductActionsProps {
   product: any
@@ -79,6 +81,17 @@ export default function ProductActions({ product, variantExtensions }: ProductAc
         onSuccess: () => {
           setJustAdded(true)
           toast.success('Added to bag')
+          const metaValue = toMetaCurrencyValue(currentPriceCents)
+          trackAddToCart(product?.id || '', selectedVariant.id, quantity, currentPriceCents ?? undefined)
+          trackMetaEvent('AddToCart', {
+            content_ids: [selectedVariant.id],
+            content_type: 'product',
+            content_name: product?.title,
+            value: metaValue,
+            currency,
+            contents: [{ id: selectedVariant.id, quantity, item_price: metaValue }],
+            num_items: quantity,
+          })
           setTimeout(() => setJustAdded(false), 2000)
         },
         onError: (error: Error) => {

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { trackMetaEvent } from '@/lib/meta-pixel'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -29,6 +30,9 @@ export default function RegisterPage() {
         last_name: lastName,
         email,
         password,
+      })
+      trackMetaEvent('CompleteRegistration', {
+        status: 'completed',
       })
       toast.success('Account created successfully!')
       router.push('/account')
