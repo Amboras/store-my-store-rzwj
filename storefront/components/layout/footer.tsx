@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { FlaskConical, Mail, Phone, MapPin } from 'lucide-react'
 import { clearConsent } from '@/lib/cookie-consent'
 import { usePolicies } from '@/hooks/use-policies'
 
@@ -9,23 +10,23 @@ const footerLinks = {
     { label: 'All Products', href: '/products' },
     { label: 'New Arrivals', href: '/products?sort=newest' },
     { label: 'Collections', href: '/collections' },
+    { label: 'Best Sellers', href: '/products' },
   ],
   help: [
     { label: 'FAQ', href: '/faq' },
     { label: 'Shipping & Returns', href: '/shipping' },
     { label: 'Contact Us', href: '/contact' },
+    { label: 'Track Order', href: '/account/orders' },
   ],
 }
 
 export default function Footer() {
   const { policies } = usePolicies()
 
-  // Build company links dynamically based on available policies
   const companyLinks = [
-    { label: 'About', href: '/about' },
+    { label: 'About VitaCore', href: '/about' },
   ]
 
-  // Add policy links only if they're set in the admin
   if (policies?.privacy_policy) {
     companyLinks.push({ label: 'Privacy Policy', href: '/privacy' })
   }
@@ -40,29 +41,40 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container-custom py-section-sm">
+    <footer className="border-t bg-slate-900 text-slate-300">
+      <div className="container-custom py-16">
         {/* Main Footer */}
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="inline-block">
-              <span className="font-heading text-2xl font-semibold">
-                Store
-              </span>
+            <Link href="/" className="inline-flex items-center gap-2 mb-4">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-600">
+                <FlaskConical className="h-4 w-4 text-white" strokeWidth={2} />
+              </div>
+              <span className="font-heading text-xl font-bold text-white">VitaCore</span>
             </Link>
-            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Curated products crafted with care. Quality you can feel, design you can see.
+            <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
+              Clinically formulated supplements built for real results. Backed by science, trusted by thousands.
             </p>
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Mail className="h-3.5 w-3.5" />
+                <span>support@vitacore.com</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Phone className="h-3.5 w-3.5" />
+                <span>1-800-VITACORE</span>
+              </div>
+            </div>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Shop</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white mb-5">Shop</h3>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link href={link.href} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -72,11 +84,11 @@ export default function Footer() {
 
           {/* Help Links */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Help</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white mb-5">Support</h3>
             <ul className="space-y-3">
               {footerLinks.help.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link href={link.href} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -86,23 +98,32 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4">Company</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white mb-5">Company</h3>
             <ul className="space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link href={link.href} className="text-sm text-slate-400 hover:text-teal-400 transition-colors">
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
+            {/* Certifications */}
+            <div className="mt-8 space-y-2">
+              <p className="text-xs font-semibold text-white uppercase tracking-widest">Certifications</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="text-[10px] border border-slate-600 text-slate-400 px-2 py-1 rounded">GMP Certified</span>
+                <span className="text-[10px] border border-slate-600 text-slate-400 px-2 py-1 rounded">Third-Party Tested</span>
+                <span className="text-[10px] border border-slate-600 text-slate-400 px-2 py-1 rounded">Non-GMO</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Store. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            &copy; {new Date().getFullYear()} VitaCore Health. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <button
@@ -110,11 +131,11 @@ export default function Footer() {
                 clearConsent()
                 window.dispatchEvent(new Event('manage-cookies'))
               }}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
             >
               Manage Cookies
             </button>
-            <span className="text-xs text-muted-foreground">Powered by Amboras</span>
+            <span className="text-xs text-slate-600">Powered by Amboras</span>
           </div>
         </div>
       </div>
