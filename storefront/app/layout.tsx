@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Lato, Inter } from 'next/font/google'
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
 import { Providers } from './providers'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
@@ -14,9 +14,9 @@ import dynamic from 'next/dynamic'
 
 const CookieConsent = dynamic(() => import('@/components/cookie-consent'))
 
-const heading = Lato({
+const heading = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['500', '600', '700', '800'],
   variable: '--font-heading',
   display: 'swap',
 })
@@ -30,10 +30,10 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Store — Modern Commerce',
-    template: '%s | Store',
+    default: 'VitaCore — Premium Health Supplements',
+    template: '%s | VitaCore',
   },
-  description: 'Discover curated products crafted with care. A modern ecommerce experience.',
+  description: 'Clinically formulated supplements for peak performance, recovery, and everyday wellness. Trusted by thousands.',
 }
 
 export default function RootLayout({
@@ -44,9 +44,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${heading.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
-        {/* PostHog cross-origin iframe recording shim — records DOM via rrweb and forwards
-            events to the parent window (admin dashboard) for session replay.
-            Uses rrweb@2.0.0-alpha.20 (same version proven in ecomcoder production). */}
         <script dangerouslySetInnerHTML={{ __html: `
 (function() {
   'use strict';
