@@ -2,11 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Search, ShoppingBag, User, Menu, X, LogIn, Leaf } from 'lucide-react'
+import { Search, ShoppingBag, User, Menu, X, LogIn } from 'lucide-react'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import CartDrawer from '@/components/cart/cart-drawer'
 import { useCollections } from '@/hooks/use-collections'
+
+const NAV_LINKS = [
+  { label: 'New Arrivals', href: '/products?sort=newest' },
+  { label: 'Women', href: '/collections' },
+  { label: 'Men', href: '/collections' },
+  { label: 'Best Sellers', href: '/products' },
+  { label: 'Sale', href: '/products', highlight: true },
+]
 
 export default function Header() {
   const { itemCount } = useCart()
@@ -28,7 +36,11 @@ export default function Header() {
   useEffect(() => {
     if (isMobileMenuOpen) {
       mobileMenuCloseRef.current?.focus()
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
     }
+    return () => { document.body.style.overflow = '' }
   }, [isMobileMenuOpen])
 
   useEffect(() => {
@@ -62,76 +74,85 @@ export default function Header() {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-md border-b border-border shadow-sm'
-            : 'bg-white border-b border-border'
+            ? 'bg-white/96 backdrop-blur-md border-b border-zinc-100 shadow-sm'
+            : 'bg-white border-b border-zinc-100'
         }`}
       >
         <div className="container-custom">
           <div className="flex h-16 items-center justify-between gap-4">
+
             {/* Mobile menu toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -ml-2 lg:hidden hover:opacity-70 transition-opacity"
+              className="p-2 -ml-2 lg:hidden hover:opacity-60 transition-opacity"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-navy-800">
-                <Leaf className="h-4 w-4 text-mint-400" />
-              </div>
-              <span className="font-heading text-xl font-bold tracking-tight text-navy-800">
-                VitalPure
+            <Link href="/" className="flex-shrink-0">
+              <span className="font-heading text-2xl font-bold tracking-[0.12em] uppercase text-foreground">
+                ZC Fashion
               </span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
-              <Link href="/products" className="text-sm font-medium tracking-wide text-foreground hover:text-accent transition-colors" prefetch={true}>
-                Shop All
-              </Link>
-              {collections?.slice(0, 4).map((collection: any) => (
+            <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`text-xs font-medium tracking-[0.1em] uppercase transition-colors ${
+                    link.highlight
+                      ? 'text-red-600 hover:text-red-500'
+                      : 'text-foreground/70 hover:text-foreground'
+                  }`}
+                  prefetch={true}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              {collections?.slice(0, 0).map((collection: any) => (
                 <Link
                   key={collection.id}
                   href={`/collections/${collection.handle}`}
-                  className="text-sm font-medium tracking-wide text-foreground hover:text-accent transition-colors"
+                  className="text-xs font-medium tracking-[0.1em] uppercase text-foreground/70 hover:text-foreground transition-colors"
                   prefetch={true}
                 >
                   {collection.title}
                 </Link>
               ))}
-              <Link href="/about" className="text-sm font-medium tracking-wide text-foreground hover:text-accent transition-colors" prefetch={true}>
-                Our Science
-              </Link>
             </nav>
 
             {/* Actions */}
             <div className="flex items-center gap-1">
               <Link
                 href="/search"
-                className="p-2.5 hover:opacity-70 transition-opacity"
+                className="p-2.5 hover:opacity-60 transition-opacity"
                 aria-label="Search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </Link>
               <Link
                 href={isLoggedIn ? '/account' : '/auth/login'}
-                className="p-2.5 hover:opacity-70 transition-opacity hidden sm:block"
+                className="p-2.5 hover:opacity-60 transition-opacity hidden sm:block"
                 aria-label={isLoggedIn ? 'Account' : 'Sign in'}
               >
-                {isLoggedIn ? <User className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+                {isLoggedIn
+                  ? <User className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  : <LogIn className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                }
               </Link>
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 hover:opacity-70 transition-opacity"
+                className="relative p-2.5 hover:opacity-60 transition-opacity"
                 aria-label="Shopping bag"
               >
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 {itemCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-navy-800 text-[10px] font-bold text-white">
-                    {itemCount}
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[9px] font-bold text-background">
+                    {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
               </button>
@@ -144,7 +165,7 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div
@@ -153,62 +174,60 @@ export default function Header() {
             aria-modal="true"
             aria-label="Navigation menu"
             onKeyDown={handleMobileMenuKeyDown}
-            className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-white animate-slide-in-right"
+            className="absolute inset-y-0 left-0 w-[280px] bg-white animate-slide-in-right flex flex-col"
           >
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex items-center justify-center h-7 w-7 rounded-full bg-navy-800">
-                  <Leaf className="h-3.5 w-3.5 text-mint-400" />
-                </div>
-                <span className="font-heading text-lg font-bold text-navy-800">VitalPure</span>
-              </Link>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100">
+              <span className="font-heading text-xl font-bold tracking-[0.12em] uppercase">ZC Fashion</span>
               <button
                 ref={mobileMenuCloseRef}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 hover:opacity-70"
+                className="p-1.5 hover:opacity-60 transition-opacity"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="p-4 space-y-1">
-              <Link
-                href="/products"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-3 text-base font-medium border-b border-border/50 hover:text-accent transition-colors"
-                prefetch={true}
-              >
-                Shop All
-              </Link>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto px-6 py-6 space-y-1">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block py-3.5 text-sm font-medium tracking-[0.08em] uppercase border-b border-zinc-50 transition-colors ${
+                    link.highlight ? 'text-red-600' : 'text-foreground hover:text-foreground/60'
+                  }`}
+                  prefetch={true}
+                >
+                  {link.label}
+                </Link>
+              ))}
               {collections?.map((collection: any) => (
                 <Link
                   key={collection.id}
                   href={`/collections/${collection.handle}`}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-base font-medium border-b border-border/50 hover:text-accent transition-colors"
+                  className="block py-3.5 text-sm font-medium tracking-[0.08em] uppercase border-b border-zinc-50 text-foreground hover:text-foreground/60 transition-colors"
                   prefetch={true}
                 >
                   {collection.title}
                 </Link>
               ))}
-              <Link
-                href="/about"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-3 text-base font-medium border-b border-border/50 hover:text-accent transition-colors"
-                prefetch={true}
-              >
-                Our Science
-              </Link>
-              <div className="pt-4 space-y-1">
-                <Link
-                  href={isLoggedIn ? '/account' : '/auth/login'}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {isLoggedIn ? 'Account' : 'Sign In'}
-                </Link>
-              </div>
             </nav>
+
+            {/* Footer */}
+            <div className="px-6 py-6 border-t border-zinc-100 space-y-3">
+              <Link
+                href={isLoggedIn ? '/account' : '/auth/login'}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isLoggedIn ? <User className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                {isLoggedIn ? 'My Account' : 'Sign In'}
+              </Link>
+            </div>
           </div>
         </div>
       )}

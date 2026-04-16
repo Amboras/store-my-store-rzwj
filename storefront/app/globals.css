@@ -4,32 +4,34 @@
 
 @layer base {
   :root {
-    /* VitaCore Health — Clean clinical white + deep teal + warm mint */
+    /* ZC Fashion — Clean black, white & warm neutral palette */
     --background: 0 0% 99%;
-    --foreground: 210 25% 12%;
-    --muted: 200 20% 96%;
-    --muted-foreground: 210 12% 48%;
-    --accent: 168 60% 36%;
-    --accent-foreground: 0 0% 100%;
-    --border: 210 15% 90%;
-    --ring: 168 60% 36%;
-    --primary: 210 25% 12%;
+    --foreground: 0 0% 8%;
+    --muted: 30 10% 95%;
+    --muted-foreground: 0 0% 48%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 0 0% 98%;
+    --border: 0 0% 88%;
+    --ring: 0 0% 8%;
+    --primary: 0 0% 8%;
     --primary-foreground: 0 0% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
+    --warm-100: 30 15% 96%;
+    --warm-200: 30 10% 90%;
   }
 
   .dark {
-    --background: 210 25% 8%;
-    --foreground: 200 20% 95%;
-    --muted: 210 20% 14%;
-    --muted-foreground: 210 12% 55%;
-    --accent: 168 55% 42%;
-    --accent-foreground: 0 0% 100%;
-    --border: 210 18% 18%;
-    --ring: 168 55% 42%;
-    --primary: 200 20% 95%;
-    --primary-foreground: 210 25% 8%;
+    --background: 0 0% 6%;
+    --foreground: 0 0% 95%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 8%;
+    --border: 0 0% 18%;
+    --ring: 0 0% 92%;
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 8%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
   }
@@ -69,38 +71,33 @@
     @apply w-full;
   }
 
-  /* Brand color utilities */
+  /* ZC Fashion button utilities */
+  .btn-primary {
+    @apply bg-foreground text-background hover:bg-foreground/85 transition-colors font-medium tracking-widest uppercase text-xs px-8 py-4;
+  }
+
+  .btn-secondary {
+    @apply border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors font-medium tracking-widest uppercase text-xs px-8 py-4;
+  }
+
   .btn-brand-primary {
-    background-color: var(--brand-primary, hsl(168 60% 36%));
-    color: white;
+    background-color: var(--brand-primary, hsl(var(--foreground)));
+    color: hsl(var(--background));
   }
   .btn-brand-primary:hover {
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .text-brand-primary {
-    color: var(--brand-primary, hsl(168 60% 36%));
-  }
-
-  .text-brand-secondary {
-    color: var(--brand-secondary, hsl(var(--accent)));
+    color: var(--brand-primary, hsl(var(--foreground)));
   }
 
   .border-brand-primary {
-    border-color: var(--brand-primary, hsl(168 60% 36%));
+    border-color: var(--brand-primary, hsl(var(--foreground)));
   }
 
   .bg-brand-primary {
-    background-color: var(--brand-primary, hsl(168 60% 36%));
-  }
-
-  .bg-brand-secondary {
-    background-color: var(--brand-secondary, hsl(var(--accent)));
-  }
-
-  /* Healthcare pill badge */
-  .badge-teal {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 text-xs font-medium px-3 py-1;
+    background-color: var(--brand-primary, hsl(var(--foreground)));
   }
 }
 
@@ -111,7 +108,8 @@ html {
 
 /* Selection color */
 ::selection {
-  @apply bg-teal-100 text-foreground;
+  background: hsl(0 0% 12%);
+  color: hsl(0 0% 98%);
 }
 
 /* Focus styles */
@@ -130,19 +128,38 @@ html {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slide-in-from-left {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 @keyframes count-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fade-in 0.5s ease-out;
+  animation: fade-in 0.6s ease-out forwards;
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out;
+  animation: fade-in-up 0.7s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-from-left 0.5s ease-out forwards;
 }
 
 .animate-count-up {
   animation: count-up 0.4s ease-out;
+}
+
+/* Marquee strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
 }

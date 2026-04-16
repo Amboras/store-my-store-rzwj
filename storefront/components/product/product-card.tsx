@@ -20,36 +20,55 @@ export default function ProductCard({ product, variantExtensions }: ProductCardP
 
   return (
     <Link href={`/products/${product.handle}`} className="group block" prefetch={true}>
-      <div className="space-y-3">
-        {/* Product Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-muted rounded-sm">
-          <Image
-            src={getProductImage(product.thumbnail, product.id)}
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className={`object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${soldOut ? 'opacity-50' : ''}`}
-          />
+      {/* Image */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100">
+        <Image
+          src={getProductImage(product.thumbnail, product.id)}
+          alt={product.title}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${soldOut ? 'opacity-60' : ''}`}
+        />
+
+        {/* Badge overlay */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {soldOut && (
-            <div className="absolute top-2 left-2 bg-muted-foreground/80 text-white text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-sm">
+            <span className="bg-foreground text-background text-[9px] font-medium tracking-[0.15em] uppercase px-2.5 py-1">
               Sold Out
-            </div>
+            </span>
+          )}
+          {ext?.compare_at_price && !soldOut && (
+            <span className="bg-red-600 text-white text-[9px] font-medium tracking-[0.15em] uppercase px-2.5 py-1">
+              Sale
+            </span>
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="space-y-1">
-          <h3 className={`text-sm font-medium line-clamp-1 group-hover:underline underline-offset-4 transition-all ${soldOut ? 'text-muted-foreground' : ''}`}>
-            {product.title}
-          </h3>
-          <ProductPrice
-            amount={currentAmount}
-            currency={currency}
-            compareAtPrice={ext?.compare_at_price}
-            soldOut={soldOut}
-            size="card"
-          />
-        </div>
+        {/* Quick Add overlay on hover */}
+        {!soldOut && (
+          <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+            <div className="bg-foreground/95 text-background text-[10px] font-medium tracking-[0.18em] uppercase py-3.5 text-center">
+              View Product
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Product Info */}
+      <div className="mt-4 space-y-1.5">
+        {product.subtitle && (
+          <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">{product.subtitle}</p>
+        )}
+        <h3 className={`text-sm font-medium tracking-wide leading-snug ${soldOut ? 'text-muted-foreground' : 'text-foreground'}`}>
+          {product.title}
+        </h3>
+        <ProductPrice
+          amount={currentAmount}
+          currency={currency}
+          compareAtPrice={ext?.compare_at_price}
+          soldOut={soldOut}
+          size="card"
+        />
       </div>
     </Link>
   )

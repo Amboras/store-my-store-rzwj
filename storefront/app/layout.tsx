@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import { Providers } from './providers'
 import Header from '@/components/layout/header'
 import Footer from '@/components/layout/footer'
@@ -14,26 +14,26 @@ import dynamic from 'next/dynamic'
 
 const CookieConsent = dynamic(() => import('@/components/cookie-consent'))
 
-const heading = Plus_Jakarta_Sans({
+const heading = Cormorant_Garamond({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-heading',
   display: 'swap',
 })
 
-const body = Inter({
+const body = DM_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-body',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
   title: {
-    default: 'VitaCore — Premium Health Supplements',
-    template: '%s | VitaCore',
+    default: 'ZC Fashion — Elevate Your Style',
+    template: '%s | ZC Fashion',
   },
-  description: 'Clinically formulated supplements for peak performance, recovery, and everyday wellness. Trusted by thousands.',
+  description: 'Premium fashion for the modern wardrobe. Discover curated collections for men and women — clean, minimal, and effortlessly stylish.',
 }
 
 export default function RootLayout({
